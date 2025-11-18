@@ -51,7 +51,7 @@ WHERE  (runner_orders.cancellation  = 'null' OR runner_orders.cancellation = '' 
 GROUP BY customer_orders.pizza_id, pizza_type;
 ```
 
-###5.How many Vegetarian and Meatlovers were ordered by each customer?
+### 5.How many Vegetarian and Meatlovers were ordered by each customer?
 
 Pour avoir le nombre de pizzas Meatlovers et Vegetarian que chaque client a commandées; nous avons:
 
