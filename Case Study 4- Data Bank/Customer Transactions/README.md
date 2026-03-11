@@ -89,3 +89,47 @@ ORDER BY customer_id, txn_month;
 ### 5.What is the percentage of customers who increase their closing balance by more than 5%?
 
 Pour avoir le pourcentage de clients qui augmentent leur solde de clôture de plus de 5 %:
+- CTE ``monthly_closing_balances``: On trouve le solde de clôture pour chaque client à la fin de chaque mois (question précédente)
+- CTE ``first_last_balance``:On trouve le solde de clôture au premier et au dernier mois de chaque client. ``HAVING MIN(txn_month) != MAX(txn_month)`` exclut les clients qui n'ont qu'un seul mois de données.
+- On calcule le pourcentage de clients qui augmentent leur solde de clôture de plus de 5 %
+
+```sql
+WITH monthly_balances  AS (
+    SELECT 
+        customer_id,
+        DATE_TRUNC('month', txn_date)::DATE AS txn_month,
+        SUM(CASE 
+            WHEN txn_type = 'deposit' THEN txn_amount 
+            ELSE -txn_amount 
+        END) AS net_change
+    FROM data_bank.customer_transactions
+    GROUP BY customer_id, txn_month
+),
+monthly_closing_balances AS (
+    SELECT 
+    customer_id,
+    txn_month,
+    SUM(net_change) OVER ( PARTITION BY customer_id ORDER BY txn_month ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS closing_balance,
+    MIN(txn_month) OVER (PARTITION BY customer_id) AS first_month,
+    MAX(txn_month) OVER (PARTITION BY customer_id) AS last_month
+FROM monthly_balances 
+ORDER BY customer_id, txn_month
+),
+first_last_balance AS (
+    SELECT
+        customer_id,
+        MAX(CASE WHEN txn_month = first_month THEN closing_balance END) AS initial_balance,
+        MAX(CASE WHEN txn_month = last_month THEN closing_balance END) AS final_balance
+    FROM monthly_closing_balances
+    GROUP BY customer_id
+    HAVING MIN(txn_month) != MAX(txn_month) 
+)
+SELECT 
+    ROUND(
+        100.0 * COUNT(CASE 
+            WHEN final_balance > initial_balance * 1.05 AND initial_balance > 0 
+            THEN 1 
+        END) / COUNT(*), 
+    2) AS customers_5pct
+FROM first_last_balance;
+```
