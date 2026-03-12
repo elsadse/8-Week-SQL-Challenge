@@ -11,3 +11,5 @@ Here is the link to each case study
 [Case Study #3 - Foodie-Fi](./Case%20Study%203-Foodie-Fi/README.md)
 
 [Case Study #4 - Data Bank](./Case%20Study%204-%20Data%20Bank/README.md)
+
+[Case Study #5 - Data Mart](./Case%20Study%205%20-%20Data%20Mart/README.md)

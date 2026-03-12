@@ -17,3 +17,10 @@ You can inspect the entity relationship diagram and example data below.
 
 [Data Mart Entity Relationship Diagram](./../Images/Data%20Mart.png)
 
+This case study has LOTS of questions - they are broken up by area of focus including:
+
+- [Data Cleansing Steps](./Data%20Cleansing%20Steps/README.md)
+- [Data Exploration](./Data%20Exploration/README.md)
+- [Before & After Analysis](./Before%20&%20After%20Analysis/README.md)
+- [Bonus Question](./Bonus%20Question/README.md)
+
