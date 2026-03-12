@@ -46,3 +46,25 @@ WHERE end_date != '9999-12-31'
 ```
 
 ### 5.What is the median, 80th and 95th percentile for this same reallocation days metric for each region?
+
+- Calculer la durée : Pour chaque ligne, on fait ``end_date - start_date``.
+- Nettoyer les données : ``end_date != '9999-12-31' AND end_date >= start_date``.
+- Utiliser une fonction de centile : PostgreSQL possède une fonction spécifique appelée ``PERCENTILE_CONT(x)``
+- Grouper par région : On joint la table ``regions`` pour avoir les noms en clair.
+```sql
+WITH reallocation_durations AS (
+    SELECT 
+        r.region_name,
+        (cn.end_date - cn.start_date) AS duration
+    FROM data_bank.customer_nodes cn
+    JOIN data_bank.regions r ON cn.region_id = r.region_id
+    WHERE cn.end_date != '9999-12-31' AND end_date >= start_date
+)
+SELECT 
+    region_name,
+    PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY duration) AS percentile_50,
+    PERCENTILE_CONT(0.8) WITHIN GROUP (ORDER BY duration) AS percentile_80,
+    PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY duration) AS percentile_95
+FROM reallocation_durations
+GROUP BY region_name;
+```
