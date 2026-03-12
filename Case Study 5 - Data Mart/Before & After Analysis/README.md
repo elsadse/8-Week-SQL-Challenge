@@ -69,7 +69,30 @@ Pour valider l'impact, nous devons répéter l'analyse "Before & After" (4 semai
 - Si 2018 et 2019 montrent une croissance à la semaine 25 alors que 2020 montre une baisse, alors le changement de packaging est très probablement le coupable.
 - Si toutes les années montrent une baisse, alors c'est un facteur saisonnier externe.
 ```sql
-Si 2018 et 2019 montrent une croissance à la semaine 25 alors que 2020 montre une baisse, alors le changement de packaging est très probablement le coupable.
-
-Si toutes les années montrent une baisse, alors c'est un facteur saisonnier externe.
+WITH sales_comparison AS (
+  SELECT
+    calendar_year,
+    week_number,
+    SUM(sales) AS total_sales
+  FROM data_mart.clean_weekly_sales
+  -- On cible la même plage de semaines (4 avant, 4 après la sem. 25)
+  WHERE week_number BETWEEN 21 AND 28
+  GROUP BY calendar_year, week_number
+),
+yearly_impact AS (
+  SELECT
+    calendar_year,
+    SUM(CASE WHEN week_number < 25 THEN total_sales END) AS sales_before,
+    SUM(CASE WHEN week_number >= 25 THEN total_sales END) AS sales_after
+  FROM sales_comparison
+  GROUP BY calendar_year
+)
+SELECT
+  calendar_year,
+  sales_before,
+  sales_after,
+  (sales_after - sales_before) AS variance,
+  ROUND(100 * (sales_after - sales_before) / sales_before, 2) AS percentage_change
+FROM yearly_impact
+ORDER BY calendar_year;
 ```
