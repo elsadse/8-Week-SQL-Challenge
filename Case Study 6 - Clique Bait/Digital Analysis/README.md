@@ -60,17 +60,78 @@ FROM clique_bait.events;
 ```
 
 ### 6. What is the percentage of visits which view the checkout page but do not have a purchase event?
+Pour trouver le pourcentage de visites qui consultent la page de paiement sans qu'un achat soit effectué :
+- CTE ``visit_checkout_purchase`` : On vérifie pour chaque visite si elle a vu la page Checkout (``page_id = 12``) et si elle a acheté (``made_purchase=1``). Si elle a vu checkout alors ``saw_checkout=1 ``
+- On fait le calcul du pourcentage
 ```sql
+WITH visit_checkout_purchase  AS (
+  SELECT 
+    visit_id,
+    MAX(CASE WHEN page_id = 12 THEN 1 ELSE 0 END) AS saw_checkout,
+    MAX(CASE WHEN event_type = 3 THEN 1 ELSE 0 END) AS made_purchase
+  FROM clique_bait.events
+  GROUP BY visit_id
+)
+SELECT 
+  ROUND(
+    100.0 * SUM(CASE WHEN saw_checkout = 1 AND made_purchase = 0 THEN 1 ELSE 0 END) 
+    / SUM(saw_checkout), 
+  2) AS pct_checkout_abandonment
+FROM visit_checkout_purchase;
 ```
 
 ### 7. What are the top 3 pages by number of views?
+- On ne garde que les événements de type 'Page View' (``event_type = 1``)
+- On joint à ``page_hierarchy`` pour avoir le nom de la page
+- On groupe par ``page_name``, on compte les occurrences et on prend les 3 premières avec ``LIMIT 3``
 ```sql
+SELECT 
+  ph.page_name,
+  COUNT(*) AS total_views
+FROM clique_bait.events e
+JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+WHERE e.event_type = 1
+GROUP BY ph.page_name
+ORDER BY total_views DESC
+LIMIT 3;
 ```
 
 ### 8. What is the number of views and cart adds for each product category?
+- On joint ``events`` et ``page_hierarchy``. On exclut les pages qui n'ont pas de catégorie de produit avec ``WHERE ph.product_category IS NOT NULL``
+- 0n utilise ``SUM(CASE...)`` pour avoir, pour chaque catégorie, le nombre total d'événements de type 'Page View' (``event_type = 1``) et de type 'Add to Cart' (``event_type = 2``)
 ```sql
+SELECT 
+  ph.product_category,
+  SUM(CASE WHEN e.event_type = 1 THEN 1 ELSE 0 END) AS total_views,
+  SUM(CASE WHEN e.event_type = 2 THEN 1 ELSE 0 END) AS total_cart_adds
+FROM clique_bait.events e
+JOIN clique_bait.page_hierarchy ph 
+  ON e.page_id = ph.page_id
+WHERE ph.product_category IS NOT NULL
+GROUP BY ph.product_category
+ORDER BY total_views DESC;
 ```
 
 ### 9. What are the top 3 products by purchases?
+- CTE ``purchase_sessions``: on identifie toute les visites avec pour but l'achat
+- On joint `events` avec `page_hierarchy` pour avoir le nom du produit et avec `purchase_sessions` pour avoir les visites avec pour but l'achat
+- On filtre que les produits ajoutés au panier `WHERE e.event_type = 2 `
+- On groupe par nom de produit et prendre les 3 premiers
 ```sql
+WITH purchase_sessions AS (
+  SELECT DISTINCT visit_id
+  FROM clique_bait.events
+  WHERE event_type = 3 
+)
+SELECT 
+  ph.page_name AS product_name,
+  COUNT(*) AS total_purchases
+FROM clique_bait.events e
+JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+JOIN purchase_sessions ps ON e.visit_id = ps.visit_id
+WHERE e.event_type = 2 
+  AND ph.product_id IS NOT NULL
+GROUP BY ph.page_name
+ORDER BY total_purchases DESC
+LIMIT 3;
 ```
