@@ -15,7 +15,7 @@ Danny has shared with you 3 key datasets for this case study:
 
 You can inspect the entity relationship diagram and example data below.
 
-[Danny's Diner Entity Relationship Diagram](./../Images/Danny's%20Diner.png)
+![Danny's Diner Entity Relationship Diagram](./../Images/Danny's%20Diner.png)
 
 ## Solutions of Case Study Questions
 

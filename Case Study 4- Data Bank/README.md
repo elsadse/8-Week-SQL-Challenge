@@ -15,7 +15,7 @@ This case study is all about calculating metrics, growth and helping the busines
 
 You can inspect the entity relationship diagram and example data below.
 
-[Data Bank Entity Relationship Diagram](./../Images/Data%20Bank.png)
+![Data Bank Entity Relationship Diagram](./../Images/Data%20Bank.png)
 
 
 This case study has LOTS of questions - they are broken up by area of focus including:

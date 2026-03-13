@@ -15,7 +15,7 @@ The key business question he wants you to help him answer are the following:
 
 You can inspect the entity relationship diagram and example data below.
 
-[Data Mart Entity Relationship Diagram](./../Images/Data%20Mart.png)
+![Data Mart Entity Relationship Diagram](./../Images/Data%20Mart.png)
 
 This case study has LOTS of questions - they are broken up by area of focus including:
 
