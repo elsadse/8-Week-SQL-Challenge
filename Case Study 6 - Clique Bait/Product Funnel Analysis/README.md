@@ -38,16 +38,16 @@ SELECT
   pe.product_category,
 
   -- Nombre total de vues
-  SUM(pe.was_viewed) AS total_views,
+  SUM(pe.was_viewed) AS views,
 
   -- Nombre total d'ajouts au panier
-  SUM(pe.was_added_to_cart) AS total_cart_adds,
+  SUM(pe.was_added_to_cart) AS cart_adds,
 
   -- Nombre d'abandons: ajouté au panier MAIS visite sans achat
-  SUM(CASE WHEN pe.was_added_to_cart = 1 AND pv.visit_id IS NULL THEN 1 ELSE 0 END) AS total_abandoned,
+  SUM(CASE WHEN pe.was_added_to_cart = 1 AND pv.visit_id IS NULL THEN 1 ELSE 0 END) AS abandoned,
 
   -- Nombre d'achats: ajouté au panier ET visite avec achat
-  SUM(CASE WHEN pe.was_added_to_cart = 1 AND pv.visit_id IS NOT NULL THEN 1 ELSE 0 END) AS total_purchases
+  SUM(CASE WHEN pe.was_added_to_cart = 1 AND pv.visit_id IS NOT NULL THEN 1 ELSE 0 END) AS purchases
 FROM product_events pe
 
 -- Jointure pour identifier les visites avec achat
@@ -57,8 +57,17 @@ GROUP BY pe.product_name, pe.product_category;
 ```
 
 Additionally, create another table which further aggregates the data for the above points but this time for each product category instead of individual products.
-
 ```sql
+DROP TABLE IF EXISTS category_info;
+CREATE TABLE category_info AS
+SELECT 
+  product_category,
+  SUM(views) AS total_views,
+  SUM(cart_adds) AS total_cart_adds,
+  SUM(abandoned) AS total_abandoned,
+  SUM(purchases) AS total_purchases
+FROM product_info
+GROUP BY product_category;
 ```
 
 Use your 2 new output tables - answer the following questions:
