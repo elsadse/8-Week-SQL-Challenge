@@ -72,8 +72,53 @@ GROUP BY product_category;
 
 Use your 2 new output tables - answer the following questions:
 
-Which product had the most views, cart adds and purchases?
-Which product was most likely to be abandoned?
-Which product had the highest view to purchase percentage?
-What is the average conversion rate from view to cart add?
-What is the average conversion rate from cart add to purchase?
+### 1. Which product had the most views, cart adds and purchases?
+Nous cherchons les valeurs maximales pour chaque métrique individuellement
+```sql
+-- Produit le plus vu
+SELECT product_name, views FROM product_info ORDER BY views DESC LIMIT 1;
+
+-- Produit le plus ajouté au panier
+SELECT product_name, cart_adds FROM product_info ORDER BY cart_adds DESC LIMIT 1;
+
+-- Produit le plus acheté
+SELECT product_name, purchases FROM product_info ORDER BY purchases DESC LIMIT 1;
+```
+
+### 2. Which product was most likely to be abandoned?
+On calcule le pourcentage d'abandonnement; on le range par ordre décroissant et on selectionne le premier de la liste
+```sql
+SELECT 
+  product_name, 
+  ROUND(100.0 * abandoned / cart_adds, 2) AS abandonment_rate
+FROM product_info
+ORDER BY abandonment_rate DESC
+LIMIT 1;
+```
+
+### 3. Which product had the highest view to purchase percentage?
+Même raisonnement que précédemment
+```sql
+SELECT 
+  product_name, 
+  ROUND(100.0 * purchases / views, 2) AS view_to_purchase_percentage
+FROM product_info
+ORDER BY view_to_purchase_percentage DESC
+LIMIT 1;
+```
+
+### 4. What is the average conversion rate from view to cart add?
+On calcule la moyenne des taux de chaque produit
+```sql
+SELECT 
+  ROUND(AVG(100.0 * cart_adds / views), 2) AS avg_view_to_cart_add_rate
+FROM product_info;
+```
+
+### 5. What is the average conversion rate from cart add to purchase?
+Même raisonnement que précédemment
+```sql
+SELECT 
+  ROUND(AVG(100.0 * purchase / cart_adds), 2) AS avg_cart_add_to_purchase_rate
+FROM product_info;
+```
