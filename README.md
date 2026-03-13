@@ -15,3 +15,5 @@ Here is the link to each case study
 [Case Study #5 - Data Mart](./Case%20Study%205%20-%20Data%20Mart/README.md)
 
 [Case Study #6 - Clique Bait](./Case%20Study%206%20-%20Clique%20Bait/README.md)
+
+[Case Study #7 - Balanced Tree Clothing Co.](./Case%20Study%207%20-%20Balanced%20Tree%20Clothing%20Co/README.md)
