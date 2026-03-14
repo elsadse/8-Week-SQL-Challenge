@@ -17,3 +17,5 @@ Here is the link to each case study
 [Case Study #6 - Clique Bait](./Case%20Study%206%20-%20Clique%20Bait/README.md)
 
 [Case Study #7 - Balanced Tree Clothing Co.](./Case%20Study%207%20-%20Balanced%20Tree%20Clothing%20Co/README.md)
+
+[Case Study #8 - Fresh Segments](./Case%20Study%208%20-%20Fresh%20Segments/README.md)
