@@ -1,4 +1,4 @@
-# Case Study 1 - Danny's Diner
+# [Case Study 1 - Danny's Diner](https://8weeksqlchallenge.com/case-study-1/)
 
 ## Problem Statement
 Danny wants to use the data to answer a few simple questions about his customers, especially about their visiting patterns, how much money they’ve spent and also which menu items are their favourite. Having this deeper connection with his customers will help him deliver a better and more personalised experience for his loyal customers.
@@ -69,7 +69,7 @@ cte1 AS (SELECT customer_id, MIN(order_date) AS o_date
 cte2 AS (SELECT sales.product_id, menu.product_name, sales.customer_id, sales.order_date
 			FROM sales
 			JOIN menu ON sales.product_id= menu.product_id)
-SELECT cte1.customer_id, cte2.product_name, cte2.product_id
+SELECT cte1.customer_id, cte2.product_name, o_date AS order_date
 FROM cte1
 JOIN cte2 ON cte1.customer_id= cte2.customer_id AND cte1.o_date=cte2.order_date;
 ```
@@ -141,18 +141,18 @@ FROM cte
 WHERE cte.rn=1;
 ```
 
-###7. Which item was purchased just before the customer became a member?
+### 7. Which item was purchased just before the customer became a member?
 
 Pour savoir quel produit chaque client a acheté juste avant sa date d’adhésion; c'est le même principe que la commande précédente sauf que nous allons filtrer les achats avant (ou le jour de) la date d’adhésion et classer les achats par date décroissante pour chaque client avec `row_number()`
 ```sql
 WITH 
 cte AS (SELECT sales.customer_id, menu.product_name, sales.product_id, sales.order_date,
-	ROW_NUMBER() OVER ( PARTITION BY sales.customer_id
+	DENSE_RANK() OVER ( PARTITION BY sales.customer_id
                        ORDER BY sales.order_date DESC ) AS rn
 	FROM sales
 	JOIN members ON sales.customer_id=members.customer_id
 	JOIN menu ON sales.product_id= menu.product_id
-	WHERE order_date<=join_date)
+	WHERE order_date<join_date)
  
 SELECT  cte.customer_id, cte.product_name, cte.product_id
 FROM cte 
@@ -173,7 +173,7 @@ SUM(menu.price) AS total_amount
 FROM sales
 JOIN members ON sales.customer_id=members.customer_id
 JOIN menu ON sales.product_id= menu.product_id
-WHERE order_date<=join_date
+WHERE order_date<join_date
 GROUP BY sales.customer_id;
 ```
 
@@ -182,7 +182,7 @@ GROUP BY sales.customer_id;
 Pour savoir combien de points chaque client a accumulé selon les règles, nous avons:
 
 - Récupérer le prix de chaque produit en faisant une jointure des tables `sales` et `menu`
-- Calculer les points en faisant un `sum()` sur les points . Si menu.product_id=1 alors on double les points(`menu.price*10`)
+- Calculer les points en faisant un `sum()` sur les points . Si menu.product_id=1 alors on double les points(`menu.price*2*10`)
 ```sql
 SELECT sales.customer_id, SUM (CASE menu.product_id
 				                    WHEN 1 THEN menu.price*2*10
@@ -197,18 +197,59 @@ GROUP BY sales.customer_id;
 
 Pour savoir combien de points les clients A et B ont accumulé en janvier; nous avons:
 
-- Filtrer les achats effectués en janvier et les clients A et B
+- Filtrer les achats effectués à la fin de janvier et les clients A et B
 - Récupérer la date d’adhésion et le prix de chaque produit
 - Calculer les points avec sum(). Au cours de la prémière semaine on double les points; si on commande le produit avec le produit_id 1, on double les points
 ```sql
 SELECT sales.customer_id, SUM (CASE 
-				                WHEN sales.order_date>=members.join_date + INTERVAL '6 days' THEN menu.price*2*10
+				                WHEN sales.order_date between members.join_date AND members.join_date + INTERVAL '6 days' THEN menu.price*2*10
                                 WHEN menu.product_id=1 THEN menu.price*2*10
 				                ELSE menu.price*10
                             END) AS points
 FROM sales
 JOIN members ON sales.customer_id=members.customer_id
 JOIN menu ON sales.product_id= menu.product_id
-WHERE sales.order_date<= '2021-01-31' AND sales.order_date>= '2021-01-01' AND (sales.customer_id='A'OR sales.customer_id='B')
+WHERE sales.order_date<= '2021-01-31' AND (sales.customer_id='A'OR sales.customer_id='B')
 GROUP BY sales.customer_id;
+```
+
+## Solution of Bonus Questions
+
+### Join All The Things
+The following questions are related creating basic data tables that Danny and his team can use to quickly derive insights without needing to join the underlying tables using SQL.
+
+```sql
+DROP TABLE IF EXISTS joined_data;
+CREATE TABLE joined_data AS
+SELECT 
+    s.customer_id, 
+    s.order_date, 
+    m.product_name, 
+    m.price,
+    CASE 
+        WHEN mem.join_date IS NULL THEN 'N'
+        WHEN s.order_date < mem.join_date THEN 'N'
+        ELSE 'Y'
+    END AS member
+FROM sales s
+JOIN menu m ON s.product_id = m.product_id
+LEFT JOIN members mem ON s.customer_id = mem.customer_id
+ORDER BY s.customer_id, s.order_date, m.product_name;
+```
+
+### Rank All The Things
+Danny also requires further information about the ``ranking`` of customer products, but he purposely does not need the ranking for non-member purchases so he expects null ``ranking`` values for the records when customers are not yet part of the loyalty program.
+
+```sql
+SELECT 
+    *,
+    CASE 
+        WHEN member = 'N' THEN NULL
+        ELSE RANK() OVER(
+            PARTITION BY customer_id, member 
+            ORDER BY order_date
+        )
+    END AS ranking
+FROM joined_data
+ORDER BY customer_id, order_date, product_name;
 ```
