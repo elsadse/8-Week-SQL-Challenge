@@ -39,6 +39,45 @@ Ce dépôt montre ma capacité à :
   - Regex & pattern matching
   - Gestion des données manquantes / nettoyage
 
+## 🚀 Environnement local avec Docker
+
+Ce projet inclut une configuration **Docker Compose** prête à l'emploi pour :
+- PostgreSQL (avec healthcheck)
+- pgAdmin 4 préconfiguré avec le serveur PostgreSQL déjà enregistré
+
+### Fichiers concernés
+- `docker-compose.yml`
+- `.env` (à créer)
+- `pgadmin-load-servers.sh` (script d’initialisation automatique des serveurs dans pgAdmin)
+
+### Étapes pour démarrer
+
+> **Prérequis** : [Docker]( https://www.docker.com/products/docker-desktop/) doit être installé sur votre machine
+
+#### 1. Clôner le dépôt
+```bash
+git https://github.com/elsadse/8-Week-SQL-Challenge.git
+cd 8-Week-SQL-Challenge
+```
+
+#### 2. Créer le fichier .env à partir de .env.example
+
+#### 3. Lancer les conteneurs
+```bash
+docker compose up -d
+```
+
+#### 3. Accéder à pgAdmin sur ce lien http://localhost:8080
+
+Se connecter avec les identifiants définis dans .env (`PGADMIN_DEFAULT_EMAI` et `PGADMIN_DEFAULT_PASSWORD`).
+Le serveur PostgreSQL est automatiquement ajouté dans pgAdmin sous le nom **SQL Challenge Postgres Server**. Se connecter avec `POSTGRES_PASSWORD`.
+
+#### 4. Importer les données de chaque case study (exécuter le script de `schema.sql` dans pgAdmin)
+
+### Arrêter les services
+```bash
+docker compose down -v
+```
 
 ## Auteurs
 
